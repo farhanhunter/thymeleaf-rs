@@ -6,6 +6,7 @@ import org.example.thymeleaf.thymeleafrs.dto.response.LoginResponse;
 import org.example.thymeleaf.thymeleafrs.entity.MstAccount;
 import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 import org.example.thymeleaf.thymeleafrs.service.MstAccountService;
+import org.example.thymeleaf.thymeleafrs.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -39,7 +40,7 @@ public class MstAccountServiceImpl implements MstAccountService {
     public LoginResponse login(LoginRequest loginRequest) {
         Optional<MstAccount> userOpt = mstAccountRepository.findByUsername(loginRequest.getUsername());
         if (userOpt.isPresent() && passwordEncoder.matches(loginRequest.getPasswordHash(), userOpt.get().getPasswordHash())) {
-            String token = "dummy-token";
+            String token = JwtUtil.generateToken(userOpt.get().getUsername());
             return new LoginResponse(token);
         }
         throw new IllegalArgumentException("Login failed for user: " + loginRequest.getUsername());

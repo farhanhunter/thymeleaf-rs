@@ -8,5 +8,4 @@ import org.example.thymeleaf.thymeleafrs.entity.MstAccount;
 public interface MstAccountService {
     MstAccount register(RegisterRequest registerRequest);
     LoginResponse login(LoginRequest loginRequest);
-    MstAccount findByUsername(String username);
 }

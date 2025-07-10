@@ -45,9 +45,4 @@ public class MstAccountServiceImpl implements MstAccountService {
         }
         throw new IllegalArgumentException("Login failed for user: " + loginRequest.getUsername());
     }
-
-    @Override
-    public MstAccount findByUsername(String username) {
-        return mstAccountRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
-    }
 }

@@ -22,19 +22,13 @@ public class PhoneInfoController {
 
     @GetMapping
     public BaseResponse<PhoneInfoResponse> getPhoneInfo(@RequestParam String phone) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = (authentication != null) ? authentication.getName() : "unknown";
         PhoneInfoResponse data = phoneInfoService.getByPhone(phone);
-        data.setRequestedBy(username);
         return new BaseResponse<>("200", false, "Success", data);
     }
 
     @PostMapping
     public BaseResponse<PhoneInfoResponse> createPhoneInfo(@RequestBody PhoneInfoRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = (authentication != null) ? authentication.getName() : "unknown";
         PhoneInfoResponse data = phoneInfoService.savePhoneInfo(request);
-        data.setRequestedBy(username);
         return new BaseResponse<>("201", false, "Created", data);
     }
 

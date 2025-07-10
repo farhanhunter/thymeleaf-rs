@@ -1,21 +1,23 @@
 package org.example.thymeleaf.thymeleafrs.entity;
 
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.util.List;
 
 @Entity
 @Table(name = "mst_phone_info")
-public class PhoneInfo {
+public class PhoneInfo extends BaseEntity {
     @Id
     private String phone;
     private String name;
     private String source;
 
     @ElementCollection
+    @CollectionTable(
+            name = "mst_phone_info_tags",
+            joinColumns = @JoinColumn(name = "phone", referencedColumnName = "phone")
+    )
+    @Column(name = "tag")
     private List<String> tags;
 
     public String getPhone() {

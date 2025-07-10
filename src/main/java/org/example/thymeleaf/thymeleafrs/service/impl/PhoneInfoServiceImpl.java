@@ -30,6 +30,8 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
     @Override
     public PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request) {
         PhoneInfo entity = toEntity(request);
+        entity.setCreatedBy(request.getName());
+        entity.setUpdatedBy(request.getName());
         PhoneInfo savedEntity = phoneInfoRepository.save(entity);
         return toResponse(savedEntity);
     }
@@ -41,6 +43,7 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
         entity.setName(request.getName());
         entity.setSource(request.getSource());
         entity.setTags(request.getTags());
+        entity.setUpdatedBy(request.getName());
         PhoneInfo updatedEntity = phoneInfoRepository.save(entity);
         return toResponse(updatedEntity);
     }
@@ -49,6 +52,7 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
     public PhoneInfoResponse deletePhoneInfo(String phone) {
         PhoneInfo entity = phoneInfoRepository.findById(phone)
                 .orElseThrow(() -> new RuntimeException("Nomor tidak ditemukan di database."));
+        entity.setUpdatedBy(phone);
         phoneInfoRepository.delete(entity);
         return toResponse(entity);
     }
@@ -59,6 +63,8 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
         res.setName(entity.getName());
         res.setSource(entity.getSource());
         res.setTags(entity.getTags());
+        res.setCreatedBy(entity.getCreatedBy());
+        res.setUpdatedBy(entity.getUpdatedBy());
         return res;
     }
 

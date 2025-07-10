@@ -7,7 +7,8 @@ public class PhoneInfoResponse {
     private String name;
     private String source;
     private List<String> tags;
-    private String requestedBy;
+    private String createdBy;
+    private String updatedBy;
 
     public String getPhone() {
         return phone;
@@ -41,11 +42,19 @@ public class PhoneInfoResponse {
         this.tags = tags;
     }
 
-    public String getRequestedBy() {
-        return requestedBy;
+    public String getCreatedBy() {
+        return createdBy;
     }
 
-    public void setRequestedBy(String requestedBy) {
-        this.requestedBy = requestedBy;
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 }

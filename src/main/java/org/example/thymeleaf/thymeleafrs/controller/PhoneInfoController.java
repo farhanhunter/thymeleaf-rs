@@ -36,7 +36,7 @@ public class PhoneInfoController {
         return new BaseResponse<>("201", false, "Created", data);
     }
 
-    @PutMapping
+    @PostMapping("/update")
     public BaseResponse<PhoneInfoResponse> updatePhoneInfo(
             @RequestParam String phone,
             @RequestBody PhoneInfoRequest request) {

@@ -1,5 +1,6 @@
 package org.example.thymeleaf.thymeleafrs.controller;
 
+import org.example.thymeleaf.thymeleafrs.constant.Constant;
 import org.example.thymeleaf.thymeleafrs.dto.request.PhoneInfoRequest;
 import org.example.thymeleaf.thymeleafrs.dto.response.BaseResponse;
 import org.example.thymeleaf.thymeleafrs.dto.response.PhoneInfoResponse;
@@ -27,8 +28,11 @@ public class PhoneInfoController {
     }
 
     @PostMapping
-    public BaseResponse<PhoneInfoResponse> createPhoneInfo(@RequestBody PhoneInfoRequest request) {
-        PhoneInfoResponse data = phoneInfoService.savePhoneInfo(request);
+    public BaseResponse<PhoneInfoResponse> createPhoneInfo(
+            @RequestBody PhoneInfoRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = (authentication != null) ? authentication.getName() : Constant.UNKNOWN;
+        PhoneInfoResponse data = phoneInfoService.savePhoneInfo(request, username);
         return new BaseResponse<>("201", false, "Created", data);
     }
 
@@ -36,13 +40,17 @@ public class PhoneInfoController {
     public BaseResponse<PhoneInfoResponse> updatePhoneInfo(
             @RequestParam String phone,
             @RequestBody PhoneInfoRequest request) {
-        PhoneInfoResponse data = phoneInfoService.updatePhoneInfo(phone, request);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = (authentication != null) ? authentication.getName() : Constant.UNKNOWN;
+        PhoneInfoResponse data = phoneInfoService.updatePhoneInfo(phone, request, username);
         return new BaseResponse<>("200", false, "Updated", data);
     }
 
     @DeleteMapping
     public BaseResponse<PhoneInfoResponse> deletePhoneInfo(@RequestParam String phone) {
-        PhoneInfoResponse data = phoneInfoService.deletePhoneInfo(phone);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = (authentication != null) ? authentication.getName() : Constant.UNKNOWN;
+        PhoneInfoResponse data = phoneInfoService.deletePhoneInfo(phone, username);
         return new BaseResponse<>("200", false, "Deleted", data);
     }
 }

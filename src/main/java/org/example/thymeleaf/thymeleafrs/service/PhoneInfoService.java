@@ -5,7 +5,7 @@ import org.example.thymeleaf.thymeleafrs.dto.response.PhoneInfoResponse;
 
 public interface PhoneInfoService {
     PhoneInfoResponse getByPhone(String phone);
-    PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request);
-    PhoneInfoResponse updatePhoneInfo(String phone, PhoneInfoRequest request);
-    PhoneInfoResponse deletePhoneInfo(String phone);
+    PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request, String username);
+    PhoneInfoResponse updatePhoneInfo(String phone, PhoneInfoRequest request, String username);
+    PhoneInfoResponse deletePhoneInfo(String phone, String username);
 }

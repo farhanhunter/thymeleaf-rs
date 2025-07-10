@@ -28,31 +28,31 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
     }
 
     @Override
-    public PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request) {
+    public PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request, String username) {
         PhoneInfo entity = toEntity(request);
-        entity.setCreatedBy(request.getName());
-        entity.setUpdatedBy(request.getName());
+        entity.setCreatedBy(username);
+        entity.setUpdatedBy(username);
         PhoneInfo savedEntity = phoneInfoRepository.save(entity);
         return toResponse(savedEntity);
     }
 
     @Override
-    public PhoneInfoResponse updatePhoneInfo(String phone, PhoneInfoRequest request) {
+    public PhoneInfoResponse updatePhoneInfo(String phone, PhoneInfoRequest request, String username) {
         PhoneInfo entity = phoneInfoRepository.findById(phone)
                 .orElseThrow(() -> new RuntimeException("Nomor tidak ditemukan di database."));
         entity.setName(request.getName());
         entity.setSource(request.getSource());
         entity.setTags(request.getTags());
-        entity.setUpdatedBy(request.getName());
+        entity.setUpdatedBy(username);
         PhoneInfo updatedEntity = phoneInfoRepository.save(entity);
         return toResponse(updatedEntity);
     }
 
     @Override
-    public PhoneInfoResponse deletePhoneInfo(String phone) {
+    public PhoneInfoResponse deletePhoneInfo(String phone, String username) {
         PhoneInfo entity = phoneInfoRepository.findById(phone)
                 .orElseThrow(() -> new RuntimeException("Nomor tidak ditemukan di database."));
-        entity.setUpdatedBy(phone);
+        entity.setUpdatedBy(username);
         phoneInfoRepository.delete(entity);
         return toResponse(entity);
     }

@@ -1,7 +1,9 @@
 package org.example.thymeleaf.thymeleafrs.constant;
 
-public enum Constant {
-    ;
-
+public class Constant {
     public static final String UNKNOWN = "unknown";
+
+    private Constant() {
+        throw new IllegalStateException("Utility class");
+    }
 }

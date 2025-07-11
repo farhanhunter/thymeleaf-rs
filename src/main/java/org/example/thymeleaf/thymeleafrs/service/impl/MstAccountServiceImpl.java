@@ -33,6 +33,7 @@ public class MstAccountServiceImpl implements MstAccountService {
         user.setName(registerRequest.getName());
         user.setPhoneNumber(registerRequest.getPhoneNumber());
         user.setEmail(registerRequest.getEmail());
+        user.setRole("USER");
         return mstAccountRepository.save(user);
     }
 
@@ -40,7 +41,8 @@ public class MstAccountServiceImpl implements MstAccountService {
     public LoginResponse login(LoginRequest loginRequest) {
         Optional<MstAccount> userOpt = mstAccountRepository.findByUsername(loginRequest.getUsername());
         if (userOpt.isPresent() && passwordEncoder.matches(loginRequest.getPasswordHash(), userOpt.get().getPasswordHash())) {
-            String token = JwtUtil.generateToken(userOpt.get().getUsername());
+            MstAccount user = userOpt.get();
+            String token = JwtUtil.generateToken(user.getUsername(), user.getRole());
             return new LoginResponse(token);
         }
         throw new IllegalArgumentException("Login failed for user: " + loginRequest.getUsername());

@@ -6,8 +6,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "mst_phone_info")
-public class PhoneInfo extends BaseEntity {
+public class MstPhoneInfo extends BaseEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     private String phone;
     private String name;
     private String source;
@@ -15,10 +18,18 @@ public class PhoneInfo extends BaseEntity {
     @ElementCollection
     @CollectionTable(
             name = "mst_phone_info_tags",
-            joinColumns = @JoinColumn(name = "phone", referencedColumnName = "phone")
+            joinColumns = @JoinColumn(name = "phone_info_id", referencedColumnName = "id")
     )
     @Column(name = "tag")
     private List<String> tags;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getPhone() {
         return phone;

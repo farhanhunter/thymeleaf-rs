@@ -34,6 +34,7 @@ public class MstAccountServiceImpl implements MstAccountService {
         user.setPhoneNumber(registerRequest.getPhoneNumber());
         user.setEmail(registerRequest.getEmail());
         user.setRole("USER");
+        user.setToken("");
         return mstAccountRepository.save(user);
     }
 
@@ -43,6 +44,8 @@ public class MstAccountServiceImpl implements MstAccountService {
         if (userOpt.isPresent() && passwordEncoder.matches(loginRequest.getPasswordHash(), userOpt.get().getPasswordHash())) {
             MstAccount user = userOpt.get();
             String token = JwtUtil.generateToken(user.getUsername(), user.getRole());
+            user.setToken(token);
+            mstAccountRepository.save(user);
             return new LoginResponse(token);
         }
         throw new IllegalArgumentException("Login failed for user: " + loginRequest.getUsername());

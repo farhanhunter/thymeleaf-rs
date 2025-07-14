@@ -4,7 +4,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 import org.example.thymeleaf.thymeleafrs.util.JwtUtil;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,10 +21,17 @@ import java.util.List;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private final MstAccountRepository mstAccountRepository;
+
+    public JwtAuthFilter(MstAccountRepository mstAccountRepository) {
+        this.mstAccountRepository = mstAccountRepository;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
         String token = null;
 
         String authHeader = request.getHeader("Authorization");
@@ -35,15 +44,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
 
-        if (token != null && JwtUtil.validateToken(token)) {
+        if (token != null && JwtUtil.validateTokenWithDB(token, mstAccountRepository)) {
             String username = JwtUtil.getUsernameFromToken(token);
-            String role = JwtUtil.getRoleFromToken(token); // ✅ Ambil role dari token
-
+            String role = JwtUtil.getRoleFromToken(token);
             if (username != null && role != null) {
                 List<GrantedAuthority> authorities = List.of(
                         new SimpleGrantedAuthority("ROLE_" + role)
                 );
-
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(username, null, authorities);
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

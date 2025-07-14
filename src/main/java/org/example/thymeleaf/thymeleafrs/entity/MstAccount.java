@@ -28,6 +28,9 @@ public class MstAccount extends BaseEntity {
     @Column(length = 20, nullable = false)
     private String role = "USER";
 
+    @Column(nullable = false, length = 255)
+    private String token;
+
     public Long getId() {
         return id;
     }
@@ -82,5 +85,13 @@ public class MstAccount extends BaseEntity {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

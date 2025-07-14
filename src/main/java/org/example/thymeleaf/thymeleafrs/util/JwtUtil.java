@@ -5,9 +5,12 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.example.thymeleaf.thymeleafrs.entity.MstAccount;
+import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.Optional;
 
 public class JwtUtil {
     private static final String SECRET_KEY = "0BE4i8tUgPICAZ2FiE3xvICwgdmHVDOx";
@@ -26,10 +29,6 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SECRET_KEY_OBJ, SignatureAlgorithm.HS256)
                 .compact();
-    }
-
-    public static String generateToken(String username) {
-        return generateToken(username, "USER");
     }
 
     public static String getUsernameFromToken(String token) {
@@ -68,5 +67,15 @@ public class JwtUtil {
         } catch (Exception _) {
             return false;
         }
+    }
+
+    public static boolean validateTokenWithDB(String token, MstAccountRepository mstAccountRepository) {
+        if (!Boolean.TRUE.equals(validateToken(token))) return false;
+
+        String username = getUsernameFromToken(token);
+        if (username == null) return false;
+
+        Optional<MstAccount> userOpt = mstAccountRepository.findByUsername(username);
+        return userOpt.isPresent() && token.equals(userOpt.get().getToken());
     }
 }

@@ -24,7 +24,6 @@ public class MstAccountServiceImpl implements MstAccountService {
         this.passwordEncoder = passwordEncoder;
     }
 
-
     @Override
     public MstAccount register(RegisterRequest registerRequest) {
         MstAccount user = new MstAccount();

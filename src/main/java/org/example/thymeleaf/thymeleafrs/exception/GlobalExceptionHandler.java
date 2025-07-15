@@ -16,4 +16,9 @@ public class GlobalExceptionHandler {
     public BaseResponse<Object> handleRuntimeException(RuntimeException ex) {
         return new BaseResponse<>("500", true, "Terjadi kesalahan internal: " + ex.getMessage(), null);
     }
+
+    @ExceptionHandler(PhoneInfoDuplicateException.class)
+    public BaseResponse<Object> handlePhoneInfoDuplicate(PhoneInfoDuplicateException ex) {
+        return new BaseResponse<>("409", true, ex.getMessage(), null);
+    }
 }

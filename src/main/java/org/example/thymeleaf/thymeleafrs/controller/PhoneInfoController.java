@@ -62,6 +62,7 @@ public class PhoneInfoController {
             @RequestParam(defaultValue = "10") int size
     ) {
         Page<PhoneInfoResponse> data = phoneInfoService.getContactList(query, page, size);
-        return new BaseResponse<>("200", false, "Success", data);
+        String message = data.isEmpty() ? "No data found" : "Success";
+        return new BaseResponse<>("200", false, message, data);
     }
 }

@@ -26,4 +26,6 @@ public interface PhoneInfoRepository extends JpaRepository<MstPhoneInfo, Long> {
             nativeQuery = true
     )
     Page<MstPhoneInfo> searchContacts(@Param("query") String query, Pageable pageable);
+
+    Optional<MstPhoneInfo> findByPhoneAndSource(String phone, String source);
 }

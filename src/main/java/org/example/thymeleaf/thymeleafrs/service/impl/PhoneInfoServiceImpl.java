@@ -3,6 +3,7 @@ package org.example.thymeleaf.thymeleafrs.service.impl;
 import org.example.thymeleaf.thymeleafrs.dto.request.PhoneInfoRequest;
 import org.example.thymeleaf.thymeleafrs.dto.response.PhoneInfoResponse;
 import org.example.thymeleaf.thymeleafrs.entity.MstPhoneInfo;
+import org.example.thymeleaf.thymeleafrs.exception.PhoneInfoDuplicateException;
 import org.example.thymeleaf.thymeleafrs.exception.PhoneInfoNotFoundException;
 import org.example.thymeleaf.thymeleafrs.repository.PhoneInfoRepository;
 import org.example.thymeleaf.thymeleafrs.service.PhoneInfoService;
@@ -33,9 +34,11 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
 
     @Override
     public PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request, String username) {
-        MstPhoneInfo entity = toEntity(request);
-        entity.setCreatedBy(username);
-        entity.setUpdatedBy(username);
+        Optional<MstPhoneInfo> exists = phoneInfoRepository.findByPhoneAndSource(request.getPhone(), request.getSource());
+        if (exists.isPresent()) {
+            throw new PhoneInfoDuplicateException(request.getPhone(), request.getSource());
+        }
+        MstPhoneInfo entity = toEntity(request, username);
         MstPhoneInfo savedEntity = phoneInfoRepository.save(entity);
         return toResponse(savedEntity);
     }
@@ -44,11 +47,7 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
     public PhoneInfoResponse updatePhoneInfo(String phone, PhoneInfoRequest request, String username) {
         MstPhoneInfo entity = phoneInfoRepository.findByPhone(phone)
                 .orElseThrow(() -> new PhoneInfoNotFoundException(phone));
-        entity.setPhone(request.getPhone());
-        entity.setName(request.getName());
-        entity.setSource(request.getSource());
-        entity.setTags(request.getTags());
-        entity.setUpdatedBy(username);
+        updateEntityFromRequest(entity, request, username);
         MstPhoneInfo updatedEntity = phoneInfoRepository.save(entity);
         return toResponse(updatedEntity);
     }
@@ -80,12 +79,22 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
         return res;
     }
 
-    private MstPhoneInfo toEntity(PhoneInfoRequest req) {
+    private MstPhoneInfo toEntity(PhoneInfoRequest req, String username) {
         MstPhoneInfo entity = new MstPhoneInfo();
         entity.setPhone(req.getPhone());
         entity.setName(req.getName());
         entity.setSource(req.getSource());
         entity.setTags(req.getTags());
+        entity.setCreatedBy(username);
+        entity.setUpdatedBy(username);
         return entity;
+    }
+
+    private void updateEntityFromRequest(MstPhoneInfo entity, PhoneInfoRequest req, String username) {
+        entity.setPhone(req.getPhone());
+        entity.setName(req.getName());
+        entity.setSource(req.getSource());
+        entity.setTags(req.getTags());
+        entity.setUpdatedBy(username);
     }
 }

@@ -73,8 +73,8 @@ public class MstAccountServiceImpl implements MstAccountService {
         if (request.getPhoneNumber() == null || request.getPhoneNumber().isBlank()) {
             throw new InvalidRegisterFieldException("Nomor telepon harus diisi");
         }
-        if (request.getEmail() == null || request.getEmail().isBlank()) {
-            throw new InvalidRegisterFieldException("Email harus diisi");
+        if (request.getEmail() == null || request.getEmail().isBlank() || !isValidEmail(request.getEmail())) {
+            throw new InvalidRegisterFieldException("Email harus diisi" + " dan harus dalam format yang benar");
         }
     }
 
@@ -85,5 +85,9 @@ public class MstAccountServiceImpl implements MstAccountService {
         if (mstAccountRepository.findByPhoneNumber(request.getPhoneNumber()).isPresent()) {
             throw new PhoneNumberAlreadyExistsException(request.getPhoneNumber());
         }
+    }
+
+    private boolean isValidEmail(String email) {
+        return email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     }
 }

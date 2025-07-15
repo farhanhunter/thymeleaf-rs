@@ -1,5 +1,6 @@
 package org.example.thymeleaf.thymeleafrs.controller;
 
+import jakarta.validation.Valid;
 import org.example.thymeleaf.thymeleafrs.dto.request.LoginRequest;
 import org.example.thymeleaf.thymeleafrs.dto.request.RegisterRequest;
 import org.example.thymeleaf.thymeleafrs.dto.response.BaseResponse;
@@ -23,7 +24,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<BaseResponse<MstAccount>> register(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<BaseResponse<MstAccount>> register(@RequestBody @Valid RegisterRequest registerRequest) {
         MstAccount user = mstAccountService.register(registerRequest);
         BaseResponse<MstAccount> response = new BaseResponse<>("200", false, "User registered successfully", user);
         return ResponseEntity.ok(response);

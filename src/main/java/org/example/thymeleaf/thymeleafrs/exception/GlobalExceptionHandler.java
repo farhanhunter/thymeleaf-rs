@@ -21,4 +21,19 @@ public class GlobalExceptionHandler {
     public BaseResponse<Object> handlePhoneInfoDuplicate(PhoneInfoDuplicateException ex) {
         return new BaseResponse<>("409", true, ex.getMessage(), null);
     }
+
+    @ExceptionHandler(UsernameAlreadyExistsException.class)
+    public BaseResponse<Object> handleUsernameExists(UsernameAlreadyExistsException ex) {
+        return new BaseResponse<>("409", true, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(PhoneNumberAlreadyExistsException.class)
+    public BaseResponse<Object> handlePhoneNumberExists(PhoneNumberAlreadyExistsException ex) {
+        return new BaseResponse<>("409", true, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvalidRegisterFieldException.class)
+    public BaseResponse<Object> handleInvalidField(InvalidRegisterFieldException ex) {
+        return new BaseResponse<>("400", true, ex.getMessage(), null);
+    }
 }

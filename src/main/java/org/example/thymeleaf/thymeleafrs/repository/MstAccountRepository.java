@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface MstAccountRepository extends JpaRepository<MstAccount, Long> {
     Optional<MstAccount> findByUsername(String username);
+    Optional<MstAccount> findByPhoneNumber(String phoneNumber);
 }

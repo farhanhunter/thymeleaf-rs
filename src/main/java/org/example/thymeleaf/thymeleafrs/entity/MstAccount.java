@@ -1,6 +1,7 @@
 package org.example.thymeleaf.thymeleafrs.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 
 @Entity
@@ -10,19 +11,20 @@ public class MstAccount extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     @Column(unique = true, nullable = false, length = 50)
     private String username;
 
     @Column(nullable = false, length = 255)
     private String passwordHash;
 
-    @Column(length = 100)
+    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(length = 20)
+    @Column(unique = true, nullable = false, length = 20)
     private String phoneNumber;
 
-    @Column(length = 100)
+    @Column(nullable = false, length = 100)
     private String email;
 
     @Column(length = 20, nullable = false)

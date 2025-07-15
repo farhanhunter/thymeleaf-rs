@@ -6,6 +6,10 @@ import org.example.thymeleaf.thymeleafrs.entity.MstPhoneInfo;
 import org.example.thymeleaf.thymeleafrs.exception.PhoneInfoNotFoundException;
 import org.example.thymeleaf.thymeleafrs.repository.PhoneInfoRepository;
 import org.example.thymeleaf.thymeleafrs.service.PhoneInfoService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -56,6 +60,13 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
         entity.setUpdatedBy(username);
         phoneInfoRepository.delete(entity);
         return toResponse(entity);
+    }
+
+    @Override
+    public Page<PhoneInfoResponse> getContactList(String query, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        Page<MstPhoneInfo> contacts = phoneInfoRepository.searchContacts(query == null ? "" : query, pageable);
+        return contacts.map(this::toResponse);
     }
 
     private PhoneInfoResponse toResponse(MstPhoneInfo entity) {

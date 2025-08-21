@@ -8,10 +8,7 @@ import org.example.thymeleaf.thymeleafrs.dto.response.LoginResponse;
 import org.example.thymeleaf.thymeleafrs.entity.MstAccount;
 import org.example.thymeleaf.thymeleafrs.service.MstAccountService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -34,6 +31,13 @@ public class AuthController {
     public ResponseEntity<BaseResponse<LoginResponse>> login(@RequestBody LoginRequest loginRequest) {
         LoginResponse loginResponse = mstAccountService.login(loginRequest);
         BaseResponse<LoginResponse> response = new BaseResponse<>("200", false, "Login successful", loginResponse);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/unlock/{username}")
+    public ResponseEntity<BaseResponse<String>> unlockUser(@PathVariable String username) {
+        mstAccountService.unlockAccount(username);
+        BaseResponse<String> response = new BaseResponse<>("200", false, "User unlocked successfully", null);
         return ResponseEntity.ok(response);
     }
 }

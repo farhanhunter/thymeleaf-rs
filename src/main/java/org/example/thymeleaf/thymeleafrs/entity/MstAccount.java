@@ -2,9 +2,13 @@ package org.example.thymeleaf.thymeleafrs.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
 
 
 @Entity
+@Getter
 @Table(name = "mst_account")
 public class MstAccount extends BaseEntity {
     @Id
@@ -33,67 +37,78 @@ public class MstAccount extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String token;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(nullable = false)
+    private Integer failedLoginAttempts = 0;
+
+    @Column(nullable = false)
+    private boolean accountLocked = false;
+
+    @Column
+    private LocalDateTime lockTime;
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public String getRole() {
-        return role;
-    }
-
     public void setRole(String role) {
         this.role = role;
     }
 
-    public String getToken() {
-        return token;
-    }
-
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public void setFailedLoginAttempts(Integer failedLoginAttempts) {
+        this.failedLoginAttempts = failedLoginAttempts;
+    }
+
+    public boolean isAccountLocked() {
+        if (accountLocked && lockTime != null && lockTime.plusMinutes(5).isBefore(LocalDateTime.now())) {
+            resetFailedLogin();
+            return false;
+        }
+        return accountLocked;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public void setLockTime(LocalDateTime lockTime) {
+        this.lockTime = lockTime;
+    }
+
+    public void incrementFailedLogin() {
+        this.failedLoginAttempts++;
+        if (this.failedLoginAttempts >= 3) {
+            this.accountLocked = true;
+            this.lockTime = LocalDateTime.now();
+        }
+    }
+
+    public void resetFailedLogin() {
+        this.failedLoginAttempts = 0;
+        this.accountLocked = false;
+        this.lockTime = null;
     }
 }

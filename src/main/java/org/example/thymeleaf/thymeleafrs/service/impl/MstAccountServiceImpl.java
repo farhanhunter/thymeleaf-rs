@@ -9,6 +9,7 @@ import org.example.thymeleaf.thymeleafrs.exception.PhoneNumberAlreadyExistsExcep
 import org.example.thymeleaf.thymeleafrs.exception.UsernameAlreadyExistsException;
 import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 import org.example.thymeleaf.thymeleafrs.service.MstAccountService;
+import org.example.thymeleaf.thymeleafrs.service.SampleService;
 import org.example.thymeleaf.thymeleafrs.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,15 +24,18 @@ import java.util.Optional;
 public class MstAccountServiceImpl implements MstAccountService {
     private final MstAccountRepository mstAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SampleService sampleService;
 
     @Autowired
-    public MstAccountServiceImpl(MstAccountRepository mstAccountRepository, PasswordEncoder passwordEncoder) {
+    public MstAccountServiceImpl(MstAccountRepository mstAccountRepository, PasswordEncoder passwordEncoder, SampleService sampleService) {
         this.mstAccountRepository = mstAccountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.sampleService = sampleService;
     }
 
     @Override
     public MstAccount register(RegisterRequest registerRequest) {
+        sampleService.sampleError();
         validateRegisterFields(registerRequest);
         validateDuplicate(registerRequest);
         MstAccount entity = toEntity(registerRequest);

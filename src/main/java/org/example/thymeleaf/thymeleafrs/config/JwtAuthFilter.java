@@ -1,5 +1,7 @@
 package org.example.thymeleaf.thymeleafrs.config;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,7 +10,6 @@ import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 import org.example.thymeleaf.thymeleafrs.util.JwtUtil;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -29,33 +30,46 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+                                    @NonNull FilterChain filterChain)
+            throws ServletException, IOException {
+
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String token = null;
 
         String authHeader = request.getHeader("Authorization");
-        if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        } else {
-            String appTokenHeader = request.getHeader("appToken");
-            if (StringUtils.hasText(appTokenHeader)) {
-                token = appTokenHeader;
+        if (StringUtils.hasText(authHeader)) {
+            String h = authHeader.trim();
+            if (h.regionMatches(true, 0, "Bearer", 0, "Bearer".length())) {
+                token = h.substring("Bearer".length()).trim();
+                if (token.startsWith("\"") && token.endsWith("\"") && token.length() > 1) {
+                    token = token.substring(1, token.length() - 1);
+                }
             }
         }
 
-        if (token != null && JwtUtil.validateTokenWithDB(token, mstAccountRepository)) {
-            String username = JwtUtil.getUsernameFromToken(token);
-            String role = JwtUtil.getRoleFromToken(token);
-            if (username != null && role != null) {
-                List<GrantedAuthority> authorities = List.of(
-                        new SimpleGrantedAuthority("ROLE_" + role)
-                );
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(username, null, authorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            if (StringUtils.hasText(token)) {
+                if (JwtUtil.validateTokenWithDB(token, mstAccountRepository)) {
+                    String username = JwtUtil.getUsernameFromToken(token);
+                    String role = JwtUtil.getRoleFromToken(token);
+                    if (username != null && role != null) {
+                        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                        var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                    }
+                }
             }
+        } catch (ExpiredJwtException e) {
+            logger.debug("JWT expired", e);
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.debug("Invalid JWT", e);
         }
 
         filterChain.doFilter(request, response);

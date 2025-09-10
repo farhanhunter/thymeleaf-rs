@@ -8,6 +8,7 @@ import org.example.thymeleaf.thymeleafrs.dto.response.LoginResponse;
 import org.example.thymeleaf.thymeleafrs.entity.MstAccount;
 import org.example.thymeleaf.thymeleafrs.service.MstAccountService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,5 +40,12 @@ public class AuthController {
         mstAccountService.unlockAccount(username);
         BaseResponse<String> response = new BaseResponse<>("200", false, "User unlocked successfully", null);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<BaseResponse<Void>> logout(@AuthenticationPrincipal String username) {
+        mstAccountService.logout(username);
+        BaseResponse<Void> resp = new BaseResponse<>("204", false, "Logged out", null);
+        return ResponseEntity.status(204).body(resp);
     }
 }

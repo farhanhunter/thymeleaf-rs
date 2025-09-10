@@ -1,5 +1,6 @@
 package org.example.thymeleaf.thymeleafrs.service.impl;
 
+import jakarta.transaction.Transactional;
 import org.example.thymeleaf.thymeleafrs.dto.request.LoginRequest;
 import org.example.thymeleaf.thymeleafrs.dto.request.RegisterRequest;
 import org.example.thymeleaf.thymeleafrs.dto.response.LoginResponse;
@@ -11,6 +12,7 @@ import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 import org.example.thymeleaf.thymeleafrs.service.MstAccountService;
 import org.example.thymeleaf.thymeleafrs.service.SampleService;
 import org.example.thymeleaf.thymeleafrs.util.JwtUtil;
+import org.example.thymeleaf.thymeleafrs.util.TokenHasher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -44,15 +46,10 @@ public class MstAccountServiceImpl implements MstAccountService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        Optional<MstAccount> userOpt = mstAccountRepository.findByUsername(loginRequest.getUsername());
-        if (userOpt.isEmpty()) {
-            throw new BadCredentialsException("Invalid username or password.");
-        }
-        MstAccount user = userOpt.get();
+        MstAccount user = mstAccountRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new BadCredentialsException("Invalid username or password."));
 
-        if (user.isAccountLocked()) {
-            throw new LockedException("Account is locked due to multiple failed login attempts.");
-        }
+        if (user.isAccountLocked()) throw new LockedException("Account is locked.");
 
         if (!passwordEncoder.matches(loginRequest.getPasswordHash(), user.getPasswordHash())) {
             user.incrementFailedLogin();
@@ -64,11 +61,19 @@ public class MstAccountServiceImpl implements MstAccountService {
         mstAccountRepository.save(user);
 
         String token = JwtUtil.generateToken(user.getUsername(), user.getRole());
-
-        user.setToken(token);
+        user.setTokenHash(TokenHasher.sha256(token));
         mstAccountRepository.save(user);
 
         return new LoginResponse(token);
+    }
+
+    @Transactional
+    @Override
+    public void logout(String username) {
+        int updated = mstAccountRepository.clearTokenHashByUsername(username);
+        if (updated == 0) {
+            throw new UsernameNotFoundException("User not found: " + username);
+        }
     }
 
     @Override
@@ -91,7 +96,6 @@ public class MstAccountServiceImpl implements MstAccountService {
         account.setPhoneNumber(request.getPhoneNumber());
         account.setEmail(request.getEmail());
         account.setRole("USER");
-        account.setToken("");
         account.setFailedLoginAttempts(0);
         account.setAccountLocked(false);
         account.setLockTime(null);

@@ -25,11 +25,9 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
 
     @Override
     public PhoneInfoResponse getByPhone(String phone) {
-        Optional<MstPhoneInfo> entityOptional = phoneInfoRepository.findByPhone(phone);
-        if (entityOptional.isPresent()) {
-            return toResponse(entityOptional.get());
-        }
-        throw new PhoneInfoNotFoundException(phone);
+        return phoneInfoRepository.findByPhone(phone)
+                .map(this::toResponse)
+                .orElseThrow(() -> new PhoneInfoNotFoundException(phone));
     }
 
     @Override

@@ -11,9 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class PhoneInfoServiceImpl implements PhoneInfoService {
@@ -31,26 +30,25 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request, String username) {
-        Optional<MstPhoneInfo> exists = phoneInfoRepository.findByPhoneAndSource(request.getPhone(), request.getSource());
-        if (exists.isPresent()) {
-            throw new PhoneInfoDuplicateException(request.getPhone(), request.getSource());
-        }
+        phoneInfoRepository.findByPhoneAndSource(request.getPhone(), request.getSource())
+                .ifPresent(pi -> { throw new PhoneInfoDuplicateException(request.getPhone(), request.getSource()); });
         MstPhoneInfo entity = toEntity(request, username);
-        MstPhoneInfo savedEntity = phoneInfoRepository.save(entity);
-        return toResponse(savedEntity);
+        return toResponse(phoneInfoRepository.save(entity));
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public PhoneInfoResponse updatePhoneInfo(String phone, PhoneInfoRequest request, String username) {
         MstPhoneInfo entity = phoneInfoRepository.findByPhone(phone)
                 .orElseThrow(() -> new PhoneInfoNotFoundException(phone));
         updateEntityFromRequest(entity, request, username);
-        MstPhoneInfo updatedEntity = phoneInfoRepository.save(entity);
-        return toResponse(updatedEntity);
+        return toResponse(phoneInfoRepository.save(entity));
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public PhoneInfoResponse deletePhoneInfo(String phone, String username) {
         MstPhoneInfo entity = phoneInfoRepository.findByPhone(phone)
                 .orElseThrow(() -> new PhoneInfoNotFoundException(phone));
@@ -62,8 +60,8 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
     @Override
     public Page<PhoneInfoResponse> getContactList(String query, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-        Page<MstPhoneInfo> contacts = phoneInfoRepository.searchContacts(query == null ? "" : query, pageable);
-        return contacts.map(this::toResponse);
+        return phoneInfoRepository.searchContacts(query == null ? "" : query, pageable)
+                .map(this::toResponse);
     }
 
     private PhoneInfoResponse toResponse(MstPhoneInfo entity) {

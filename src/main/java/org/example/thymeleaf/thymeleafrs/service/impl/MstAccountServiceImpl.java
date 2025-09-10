@@ -14,6 +14,7 @@ import org.example.thymeleaf.thymeleafrs.service.SampleService;
 import org.example.thymeleaf.thymeleafrs.util.JwtUtil;
 import org.example.thymeleaf.thymeleafrs.util.TokenHasher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -77,6 +78,7 @@ public class MstAccountServiceImpl implements MstAccountService {
     }
 
     @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public void unlockAccount(String username) {
         Optional<MstAccount> userOpt = mstAccountRepository.findByUsername(username);
         if (userOpt.isPresent()) {

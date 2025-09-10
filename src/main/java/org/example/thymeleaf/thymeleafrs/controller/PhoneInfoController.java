@@ -1,12 +1,12 @@
 package org.example.thymeleaf.thymeleafrs.controller;
 
+import jakarta.validation.Valid;
 import org.example.thymeleaf.thymeleafrs.dto.request.PhoneInfoRequest;
 import org.example.thymeleaf.thymeleafrs.dto.response.BaseResponse;
 import org.example.thymeleaf.thymeleafrs.dto.response.PhoneInfoResponse;
 import org.example.thymeleaf.thymeleafrs.service.PhoneInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -23,34 +23,34 @@ public class PhoneInfoController {
     }
 
     @GetMapping
-    public ResponseEntity<BaseResponse<PhoneInfoResponse>> getPhoneInfo(@RequestParam String phone) {
-        PhoneInfoResponse data = phoneInfoService.getByPhone(phone);
+    public ResponseEntity<BaseResponse<PhoneInfoResponse>> getPhoneInfo(
+            @RequestParam String phone) {
+        var data = phoneInfoService.getByPhone(phone);
         return ResponseEntity.ok(new BaseResponse<>("200", false, "Success", data));
     }
 
     @PostMapping
-    public ResponseEntity<BaseResponse<PhoneInfoResponse>> createPhoneInfo(
-            @RequestBody PhoneInfoRequest request,
+    public ResponseEntity<BaseResponse<PhoneInfoResponse>> create(
+            @RequestBody @Valid PhoneInfoRequest req,
             @AuthenticationPrincipal String username) {
-        PhoneInfoResponse data = phoneInfoService.savePhoneInfo(request, username);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new BaseResponse<>("201", false, "Created", data));
+        var data = phoneInfoService.savePhoneInfo(req, username);
+        return ResponseEntity.ok(new BaseResponse<>("201", false, "Created", data));
     }
 
-    @PostMapping("/update")
-    public ResponseEntity<BaseResponse<PhoneInfoResponse>> updatePhoneInfo(
-            @RequestParam String phone,
-            @RequestBody PhoneInfoRequest request,
+    @PutMapping("/{phone}")
+    public ResponseEntity<BaseResponse<PhoneInfoResponse>> update(
+            @PathVariable String phone,
+            @RequestBody @Valid PhoneInfoRequest req,
             @AuthenticationPrincipal String username) {
-        PhoneInfoResponse data = phoneInfoService.updatePhoneInfo(phone, request, username);
+        var data = phoneInfoService.updatePhoneInfo(phone, req, username);
         return ResponseEntity.ok(new BaseResponse<>("200", false, "Updated", data));
     }
 
-    @DeleteMapping
-    public ResponseEntity<BaseResponse<PhoneInfoResponse>> deletePhoneInfo(
-            @RequestParam String phone,
+    @DeleteMapping("/{phone}")
+    public ResponseEntity<BaseResponse<PhoneInfoResponse>> delete(
+            @PathVariable String phone,
             @AuthenticationPrincipal String username) {
-        PhoneInfoResponse data = phoneInfoService.deletePhoneInfo(phone, username);
+        var data = phoneInfoService.deletePhoneInfo(phone, username);
         return ResponseEntity.ok(new BaseResponse<>("200", false, "Deleted", data));
     }
 

@@ -5,7 +5,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.example.thymeleaf.thymeleafrs.entity.MstAccount;
 import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 
 import java.nio.charset.StandardCharsets;
@@ -13,7 +12,6 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.util.Date;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 public class JwtUtil {
@@ -89,15 +87,5 @@ public class JwtUtil {
                     );
                 })
                 .orElse(false);
-    }
-
-
-    public static String getJti(String token) {
-        try {
-            return Jwts.parserBuilder().setSigningKey(SECRET_KEY_OBJ).build()
-                    .parseClaimsJws(token).getBody().getId();
-        } catch (JwtException | IllegalArgumentException e) {
-            return null;
-        }
     }
 }

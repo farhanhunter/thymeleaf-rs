@@ -33,7 +33,7 @@ public class PhoneInfoServiceImpl implements PhoneInfoService {
     @PreAuthorize("hasRole('ADMIN')")
     public PhoneInfoResponse savePhoneInfo(PhoneInfoRequest request, String username) {
         phoneInfoRepository.findByPhoneAndSource(request.getPhone(), request.getSource())
-                .ifPresent(pi -> { throw new PhoneInfoDuplicateException(request.getPhone(), request.getSource()); });
+                .ifPresent(_ -> { throw new PhoneInfoDuplicateException(request.getPhone(), request.getSource()); });
         MstPhoneInfo entity = toEntity(request, username);
         return toResponse(phoneInfoRepository.save(entity));
     }

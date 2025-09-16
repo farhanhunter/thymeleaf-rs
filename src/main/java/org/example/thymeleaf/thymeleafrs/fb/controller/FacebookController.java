@@ -1,5 +1,6 @@
 package org.example.thymeleaf.thymeleafrs.fb.controller;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.thymeleaf.thymeleafrs.fb.dto.FbMeDto;
@@ -7,7 +8,6 @@ import org.example.thymeleaf.thymeleafrs.fb.service.FacebookOAuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.Map;
 
@@ -21,19 +21,31 @@ public class FacebookController {
     public record RevokeResp(boolean revoked, String fbUserId) {}
 
     @GetMapping("/auth/url")
-    public ResponseEntity<Map<String, String>> authUrl(@RequestParam(defaultValue = "state123") String state) {
-        return ResponseEntity.ok(Map.of("authorization_url", facebookOAuthService.buildAuthUrl(state)));
+    public ResponseEntity<Map<String, String>> authUrl(
+            @RequestParam(required = false) String state,
+            HttpSession session
+    ) {
+        String s = (state != null && !state.isBlank()) ? state : generateState();
+        session.setAttribute("OAUTH_STATE", s);
+        return ResponseEntity.ok(Map.of("authorization_url", facebookOAuthService.buildAuthUrl(s)));
     }
 
     @GetMapping("/callback")
     public ResponseEntity<?> callback(@RequestParam String code,
-                                      @RequestParam(required = false) String state) {
+                                      @RequestParam String state,
+                                      HttpSession session) {
+        String expected = (String) session.getAttribute("OAUTH_STATE");
+        session.removeAttribute("OAUTH_STATE");
+
+        if (expected == null || !expected.equals(state)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid OAuth state"));
+        }
+
         var token = facebookOAuthService.exchangeCode(code);
         if (token == null || token.access_token() == null || token.access_token().isBlank()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "message", "Token exchange failed (access_token empty)"
-            ));
+            return ResponseEntity.badRequest().body(Map.of("message", "Token exchange failed (access_token empty)"));
         }
+
         try {
             var me = facebookOAuthService.getMe(token.access_token());
             var saved = facebookOAuthService.saveOrUpdate(me, token);
@@ -43,11 +55,12 @@ public class FacebookController {
                     "email", saved.getEmail(),
                     "expiresAt", saved.getExpiresAt()
             ));
-        } catch (WebClientResponseException e) {
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
             log.error("Graph /me error {}: {}", e.getStatusCode(), e.getResponseBodyAsString());
             throw e;
         }
     }
+
 
     @GetMapping("/{fbUserId}/me")
     public ResponseEntity<FbMeDto> me(@PathVariable String fbUserId) {
@@ -92,5 +105,12 @@ public class FacebookController {
     public ResponseEntity<Void> delete(@PathVariable String fbUserId) {
         facebookOAuthService.deleteByUserId(fbUserId);
         return ResponseEntity.noContent().build();
+    }
+
+    private String generateState() {
+        var sr = new java.security.SecureRandom();
+        byte[] buf = new byte[16];
+        sr.nextBytes(buf);
+        return java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(buf);
     }
 }

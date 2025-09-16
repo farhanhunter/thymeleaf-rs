@@ -29,14 +29,18 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                        .requestMatchers("/api/auth/logout").authenticated()
-                        .requestMatchers(
+                        .requestMatchers("/api/auth/login",
+                                "/api/auth/register",
+                                "/api/fb/auth/url",
+                                "/api/fb/callback",
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**"
                         ).permitAll()
+                        .requestMatchers("/api/auth/logout",
+                                "/api/fb/**"
+                        ).authenticated()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex

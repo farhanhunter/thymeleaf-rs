@@ -33,6 +33,7 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/fb/auth/url",
                                 "/api/fb/callback",
+                                "/api/fb/login",
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml",
                                 "/swagger-ui.html",

@@ -83,7 +83,6 @@ public class FacebookController {
         ));
     }
 
-
     @GetMapping("/{fbUserId}/me")
     public ResponseEntity<FbMeDto> me(@PathVariable String fbUserId) {
         var token = facebookOAuthService.findByUserId(fbUserId).orElseThrow();

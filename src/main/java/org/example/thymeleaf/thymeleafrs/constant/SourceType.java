@@ -5,5 +5,5 @@ public enum SourceType {
     TELEGRAM,
     INSTAGRAM,
     FACEBOOK,
-    OTHER;
+    OTHER
 }

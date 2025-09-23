@@ -69,7 +69,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<BaseResponse<Object>> forbidden(AccessDeniedException ex) {
-        return body(HttpStatus.FORBIDDEN, "403", "You don't have permission to access this resource", null);
+        String errorId = UUID.randomUUID().toString();
+        log.warn("errorId={} Access denied", errorId, ex);
+        return body(HttpStatus.FORBIDDEN, "403",
+                "You don't have permission to access this resource (ref: " + errorId + ")", null);
     }
 
     // ===== 4xx: validasi & request shape =====
@@ -95,7 +98,10 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<BaseResponse<Object>> unreadable(HttpMessageNotReadableException ex) {
-        return body(HttpStatus.BAD_REQUEST, "400", "Malformed JSON request", null);
+        String errorId = UUID.randomUUID().toString();
+        log.debug("errorId={} Malformed JSON request", errorId, ex);
+        return body(HttpStatus.BAD_REQUEST, "400",
+                "Malformed JSON request (ref: " + errorId + ")", null);
     }
 
     // ===== WebClient (propagasi status dari remote) =====

@@ -26,11 +26,13 @@ import java.util.Optional;
 public class MstAccountServiceImpl implements MstAccountService {
     private final MstAccountRepository mstAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public MstAccountServiceImpl(MstAccountRepository mstAccountRepository, PasswordEncoder passwordEncoder) {
+    public MstAccountServiceImpl(MstAccountRepository mstAccountRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.mstAccountRepository = mstAccountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class MstAccountServiceImpl implements MstAccountService {
         user.resetFailedLogin();
         mstAccountRepository.save(user);
 
-        String token = JwtUtil.generateToken(user.getUsername(), user.getRole());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
         user.setTokenHash(TokenHasher.sha256(token));
         mstAccountRepository.save(user);
 

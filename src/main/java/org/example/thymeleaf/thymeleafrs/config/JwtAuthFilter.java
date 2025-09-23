@@ -6,8 +6,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.example.thymeleaf.thymeleafrs.repository.MstAccountRepository;
 import org.example.thymeleaf.thymeleafrs.util.JwtUtil;
+import org.example.thymeleaf.thymeleafrs.util.TokenHasher;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,14 +20,20 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
+import java.util.Objects;
 
+@Slf4j
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private final JwtUtil jwtUtil;
     private final MstAccountRepository mstAccountRepository;
 
-    public JwtAuthFilter(MstAccountRepository mstAccountRepository) {
+    public JwtAuthFilter(JwtUtil jwtUtil, MstAccountRepository mstAccountRepository) {
+        this.jwtUtil = jwtUtil;
         this.mstAccountRepository = mstAccountRepository;
     }
 
@@ -54,24 +62,44 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            if (StringUtils.hasText(token)) {
-                if (JwtUtil.validateTokenWithDB(token, mstAccountRepository)) {
-                    String username = JwtUtil.getUsernameFromToken(token);
-                    String role = JwtUtil.getRoleFromToken(token);
-                    if (username != null && role != null) {
-                        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-                        var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                    }
+            if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
+                final String username = jwtUtil.getUsernameFromToken(token);
+                final String role     = jwtUtil.getRoleFromToken(token);
+
+                boolean ok = false;
+                if (username != null && role != null) {
+                    final String incomingHash = TokenHasher.sha256(token);
+                    ok = mstAccountRepository.findByUsername(username)
+                            .map(acc -> constantTimeEquals(
+                                    incomingHash,
+                                    Objects.toString(acc.getTokenHash(), "")
+                            ))
+                            .orElse(false);
+                }
+
+                if (ok) {
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    var auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                } else {
+                    log.debug("Token hash mismatch or user not found for {}", username);
                 }
             }
         } catch (ExpiredJwtException e) {
-            logger.debug("JWT expired", e);
+            log.debug("JWT expired", e);
         } catch (JwtException | IllegalArgumentException e) {
-            logger.debug("Invalid JWT", e);
+            log.debug("Invalid JWT", e);
         }
 
         filterChain.doFilter(request, response);
     }
+
+    private static boolean constantTimeEquals(String a, String b) {
+        return MessageDigest.isEqual(
+                (a == null ? new byte[0] : a.getBytes(StandardCharsets.UTF_8)),
+                (b == null ? new byte[0] : b.getBytes(StandardCharsets.UTF_8))
+        );
+    }
+
 }

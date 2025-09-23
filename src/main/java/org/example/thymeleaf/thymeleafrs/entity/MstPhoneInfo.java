@@ -1,11 +1,20 @@
 package org.example.thymeleaf.thymeleafrs.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import org.example.thymeleaf.thymeleafrs.constant.SourceType;
 
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "mst_phone_info")
+@Data
+@Getter
+@Setter
 public class MstPhoneInfo extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,7 +22,11 @@ public class MstPhoneInfo extends BaseEntity {
 
     private String phone;
     private String name;
-    private String source;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private SourceType source;
+
 
     @ElementCollection
     @CollectionTable(
@@ -22,44 +35,4 @@ public class MstPhoneInfo extends BaseEntity {
     )
     @Column(name = "tag")
     private List<String> tags;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSource() {
-        return source;
-    }
-
-    public void setSource(String source) {
-        this.source = source;
-    }
-
-    public List<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
 }
